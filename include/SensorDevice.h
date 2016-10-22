@@ -13,13 +13,13 @@
 
 class SensorDevice : public nite::UserTracker::NewFrameListener {
 public:
-  SensorDevice(const char *uri);
+  SensorDevice();
   ~SensorDevice();
 
   virtual void onNewFrame(nite::UserTracker &tracker) override;
 
-  cv::Mat depth_image() {
-    return depth_image_;
+  cv::Mat image() {
+    return image_;
   }
 
 
@@ -28,15 +28,11 @@ private:
   openni::VideoStream depth_stream_;
   nite::UserTracker user_tracker_;
 
-  std::thread worker_;
-  std::mutex mutex_;
-  cv::Mat depth_image_;
+  cv::Mat image_;
 
-  void checkStatus(openni::Status status, std::string msg);
   void checkStatus(nite::Status status, std::string msg);
   void checkStatus(bool is_ok, std::string msg);
-  void initialize(const char *uri);
-  void startDepthStream();
+  void initialize();
   void update();
 };
 

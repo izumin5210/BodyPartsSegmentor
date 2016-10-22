@@ -22,21 +22,10 @@ private:
 };
 
 void BodyPartsSegmentorApp::setup() {
-  if (openni::OpenNI::initialize() != openni::STATUS_OK) {
-    throw std::runtime_error("Failed to initialize OpenNI.");
-  }
   if (nite::NiTE::initialize() != nite::STATUS_OK) {
     throw std::runtime_error("Failed to initialize NiTE.");
   }
-
-  openni::Array<openni::DeviceInfo> device_info_list_;
-  openni::OpenNI::enumerateDevices(&device_info_list_);
-
-  for (int i = 0; i < device_info_list_.getSize(); i += 3) {
-    cout << device_info_list_[i].getUri() << endl;
-  }
-
-  device_ = std::unique_ptr<SensorDevice>(new SensorDevice(device_info_list_[0].getUri()));
+  device_ = std::unique_ptr<SensorDevice>(new SensorDevice);
 }
 
 void BodyPartsSegmentorApp::cleanup() {
@@ -45,7 +34,7 @@ void BodyPartsSegmentorApp::cleanup() {
 }
 
 void BodyPartsSegmentorApp::update() {
-  auto image = device_->depth_image();
+  auto image = device_->image();
   texture_ = gl::Texture::create(fromOcv(image));
 }
 
