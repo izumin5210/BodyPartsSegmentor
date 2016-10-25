@@ -56,6 +56,7 @@ void SensorDevice::update() {
   nite::UserTrackerFrameRef user_frame;
   checkStatus(user_tracker_.readFrame(&user_frame), "Failed to read user frame.");
   auto depth_frame = user_frame.getDepthFrame();
+
   if (depth_frame.isValid()) {
     auto image = cv::Mat(depth_frame.getHeight(), depth_frame.getWidth(), CV_8UC4);
     auto depth = (openni::DepthPixel *) depth_frame.getData();
@@ -75,6 +76,28 @@ void SensorDevice::update() {
         p[2] = gray;
       }
     });
+
+    const auto &users = user_frame.getUsers();
+
+    for (int i = 0; i < users.getSize(); i++) {
+      const auto &user = users[i];
+
+      if (user.isNew()) {
+        checkStatus(user_tracker_.startSkeletonTracking(user.getId()), "Failed to start tracking skeleton.");
+      } else if (!user.isLost()) {
+        const auto &skeleton = user.getSkeleton();
+        if (skeleton.getState() != nite::SKELETON_TRACKED) { continue; }
+        for (int j = 0; j <= 14; j++) {
+          const auto &joint = skeleton.getJoint((nite::JointType) j);
+          if (joint.getPositionConfidence() < 0.7f) { continue; }
+          const auto &pos = joint.getPosition();
+          float x = 0, y = 0;
+          checkStatus(user_tracker_.convertJointCoordinatesToDepth(pos.x, pos.y, pos.z, &x, &y),
+                      "Failed to convert joint coords to depth.");
+          cv::circle(image, cvPoint((int) x, (int) y), 5, cv::Scalar(0, 0, 255), -1);
+        }
+      }
+    }
 
     image.copyTo(image_);
   }
