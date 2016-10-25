@@ -7,8 +7,8 @@
 
 #include "SensorDevice.h"
 
-SensorDevice::SensorDevice() {
-  initialize();
+SensorDevice::SensorDevice(const std::string &uri) {
+  initialize(uri);
 }
 
 SensorDevice::~SensorDevice() {
@@ -32,8 +32,11 @@ void SensorDevice::checkStatus(bool is_ok, std::string msg) {
   }
 }
 
-void SensorDevice::initialize() {
-  checkStatus(user_tracker_.create(), "Failed to create nite::UserTracker.");
+void SensorDevice::initialize(const std::string &uri) {
+  if (device_.open(uri.empty() ? openni::ANY_DEVICE : uri.c_str()) != openni::STATUS_OK) {
+    throw std::runtime_error("Failed to open openni::Device.");
+  }
+  checkStatus(user_tracker_.create(&device_), "Failed to create nite::UserTracker.");
   user_tracker_.addNewFrameListener(this);
 }
 

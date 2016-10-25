@@ -22,10 +22,25 @@ private:
 };
 
 void BodyPartsSegmentorApp::setup() {
+  if (openni::OpenNI::initialize() != openni::STATUS_OK) {
+    throw std::runtime_error("Failed to initialize OpenNI.");
+  }
   if (nite::NiTE::initialize() != nite::STATUS_OK) {
     throw std::runtime_error("Failed to initialize NiTE.");
   }
-  device_ = std::unique_ptr<SensorDevice>(new SensorDevice);
+
+  openni::Array<openni::DeviceInfo> device_info_list;
+  openni::OpenNI::enumerateDevices(&device_info_list);
+  if (device_info_list.getSize() > 0) {
+    device_ = std::unique_ptr<SensorDevice>(new SensorDevice);
+  } else {
+    auto onifile = getOpenFilePath(fs::path(), { "oni" });
+    if (onifile.empty()) {
+      exit(1);
+    } else {
+      device_ = std::unique_ptr<SensorDevice>(new SensorDevice(onifile.string()));
+    }
+  }
 }
 
 void BodyPartsSegmentorApp::cleanup() {
