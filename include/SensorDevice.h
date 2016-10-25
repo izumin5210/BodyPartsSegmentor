@@ -13,7 +13,7 @@
 
 class SensorDevice : public nite::UserTracker::NewFrameListener {
 public:
-  SensorDevice();
+  SensorDevice(const std::string &uri = "");
   ~SensorDevice();
 
   virtual void onNewFrame(nite::UserTracker &tracker) override;
@@ -32,7 +32,7 @@ private:
 
   void checkStatus(nite::Status status, std::string msg);
   void checkStatus(bool is_ok, std::string msg);
-  void initialize();
+  void initialize(const std::string &uri);
   void update();
 };
 
