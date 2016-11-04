@@ -1,3 +1,6 @@
 [submodule "blocks/OpenCV3"]
 	path = blocks/OpenCV3
 	url = https://github.com/cinder/Cinder-OpenCV3
+[submodule "blocks/cereal"]
+	path = blocks/cereal
+	url = https://github.com/USCiLab/cereal.git

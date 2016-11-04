@@ -39,6 +39,7 @@ get_filename_component(CINDER_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../../../cind
 get_filename_component(PROJECT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../.." ABSOLUTE)
 
 include_directories("${PROJECT_DIR}/blocks/OpenCV3/include")
+include_directories("${PROJECT_DIR}/blocks/cereal/include")
 
 set(PROJECT_SOURCES
   ${PROJECT_DIR}/src/BodyPartsSegmentorApp.cpp
