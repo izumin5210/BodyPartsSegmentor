@@ -1,9 +1,15 @@
+#include <chrono>
+
 #include "cinder/app/App.h"
 #include "cinder/app/RendererGl.h"
 #include "cinder/gl/gl.h"
+#include "cinder/Log.h"
+
+#include "CinderOpenCV.h"
+
+#include "cereal/archives/json.hpp"
 
 #include "SensorDevice.h"
-#include "CinderOpenCV.h"
 
 using namespace ci;
 using namespace ci::app;
@@ -49,8 +55,23 @@ void BodyPartsSegmentorApp::cleanup() {
 }
 
 void BodyPartsSegmentorApp::update() {
+  device_->update();
   auto image = device_->image();
   texture_ = gl::Texture::create(fromOcv(image));
+
+  if (device_->hasSkeletons()) {
+    auto stamp = chrono::duration_cast<chrono::microseconds>(chrono::system_clock::now().time_since_epoch()).count();
+    auto dir = getAssetPath("");
+    cv::imwrite((dir / (to_string(stamp) + ".png")).string(), image);
+
+    {
+      std::ofstream ofs((dir / (to_string(stamp) + ".json")).string());
+      cereal::JSONOutputArchive ar(ofs);
+      ar(cereal::make_nvp("skeletons", device_->skeletons()));
+    }
+
+    CI_LOG_V("Save " + to_string(stamp) + ".{png,json} successfully.");
+  }
 }
 
 void BodyPartsSegmentorApp::draw() {

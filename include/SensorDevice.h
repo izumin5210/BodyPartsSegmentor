@@ -11,16 +11,26 @@
 #include <NiTE.h>
 #include <opencv2/opencv.hpp>
 
-class SensorDevice : public nite::UserTracker::NewFrameListener {
+#include "Skeleton.h"
+
+class SensorDevice {
 public:
   SensorDevice(const std::string &uri = "");
   ~SensorDevice();
 
-  virtual void onNewFrame(nite::UserTracker &tracker) override;
-
   cv::Mat image() {
     return image_;
   }
+
+  std::vector<Skeleton> skeletons() const {
+    return skeletons_;
+  };
+
+  bool hasSkeletons() const {
+    return !skeletons_.empty();
+  }
+
+  void update();
 
 
 private:
@@ -29,11 +39,13 @@ private:
   nite::UserTracker user_tracker_;
 
   cv::Mat image_;
+  std::vector<Skeleton> skeletons_;
+
+  std::mutex mutex_;
 
   void checkStatus(nite::Status status, std::string msg);
   void checkStatus(bool is_ok, std::string msg);
   void initialize(const std::string &uri);
-  void update();
 };
 
 #endif //BODYPARTSSEGMENTOR_SENSORDEVICE_H
