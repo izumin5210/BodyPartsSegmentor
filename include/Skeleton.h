@@ -6,26 +6,17 @@
 #define BODYPARTSSEGMENTOR_SKELETON_H
 
 #include "cereal/cereal.hpp"
+#include "cereal/types/map.hpp"
 #include "cereal/types/vector.hpp"
-
-struct Joint {
-  float x;
-  float y;
-  int type;
-
-  template<class Archive>
-  void serialize(Archive &ar) {
-    ar(CEREAL_NVP(x), CEREAL_NVP(y), CEREAL_NVP(type));
-  }
-};
 
 struct Skeleton {
   int user_id;
-  std::vector<Joint> joints;
+  std::map<int, std::vector<float>> joints;
+  std::vector<std::vector<int>> pixels;
 
   template<class Archive>
   void serialize(Archive &ar) {
-    ar(CEREAL_NVP(user_id), CEREAL_NVP(joints));
+    ar(CEREAL_NVP(user_id), CEREAL_NVP(joints), CEREAL_NVP(pixels));
   }
 };
 

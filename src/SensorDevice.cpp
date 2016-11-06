@@ -40,20 +40,24 @@ void SensorDevice::update() {
   auto depth_frame = user_frame.getDepthFrame();
 
   if (depth_frame.isValid()) {
-    auto image = cv::Mat(depth_frame.getHeight(), depth_frame.getWidth(), CV_16UC1, (unsigned short*) depth_frame.getData());
-    image.copyTo(image_);
+    auto image = cv::Mat(depth_frame.getHeight(), depth_frame.getWidth(),
+                         CV_16UC1,
+                         (unsigned short*) depth_frame.getData());
+    image(cv::Rect(0, 0, 512, 424)).copyTo(image_);
 
     const auto &users = user_frame.getUsers();
+    const auto &pixels = user_frame.getUserMap().getPixels();
     skeletons_.clear();
 
     for (int i = 0; i < users.getSize(); i++) {
       const auto &user = users[i];
+      Skeleton sk = { user.getId(), {}, {} };
+
       if (user.isNew()) {
         checkStatus(user_tracker_.startSkeletonTracking(user.getId()), "Failed to start tracking skeleton.");
       } else if (!user.isLost()) {
         const auto &skeleton = user.getSkeleton();
         if (skeleton.getState() != nite::SKELETON_TRACKED) { continue; }
-        Skeleton sk = { user.getId(), {} };
         for (int j = 0; j <= 14; j++) {
           nite::JointType type = (nite::JointType) j;
           const auto &joint = skeleton.getJoint(type);
@@ -62,9 +66,20 @@ void SensorDevice::update() {
           float x = 0, y = 0;
           checkStatus(user_tracker_.convertJointCoordinatesToDepth(pos.x, pos.y, pos.z, &x, &y),
                       "Failed to convert joint coords to depth.");
-          sk.joints.push_back({ x, y, type });
+          sk.joints[type] = { x, y };
         }
-        skeletons_.emplace_back(sk);
+      }
+
+      skeletons_.emplace_back(sk);
+    }
+    for (int y = 0; y < image_.size().height; y++) {
+      for (int x = 0; x < image_.size().width; x++) {
+        auto id = pixels[y * 640 + x];
+        for (auto &sk : skeletons_) {
+          if (sk.user_id == static_cast<int>(id)) {
+            sk.pixels.push_back({ x, y });
+          }
+        }
       }
     }
   }
