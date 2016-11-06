@@ -18,7 +18,7 @@ public:
   SensorDevice(const std::string &uri = "");
   ~SensorDevice();
 
-  cv::Mat image() {
+  cv::UMat image() {
     return image_;
   }
 
@@ -38,7 +38,7 @@ private:
   openni::VideoStream depth_stream_;
   nite::UserTracker user_tracker_;
 
-  cv::Mat image_;
+  cv::UMat image_;
   std::vector<Skeleton> skeletons_;
 
   std::mutex mutex_;
